@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+  <style>
+    body{
+        margin: 0;
+    }
+
+    p{
+      margin-left: 20px;
+      color:white;
+    }
+    .NavBar{
+        width: 100%;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(44, 42, 39, 0.983);
+        position: fixed;
+        margin: 0;
+        padding: 0;
+    }
+
+    .Menu{
+        display:flex;
+        list-style: none;
+        margin-right: 10%;
+    }
+
+    .Menu li{
+        margin-left: 3rem;
+    }
+
+    .Menu a{
+        text-decoration: none;
+        font-size: 1.5rem;
+        color: white;
+        padding: 10px;
+    }
+
+
+
+    .dropdown{
+        display:none;
+    }
+
+    .Menu li :hover,
+    .Menu li :active{
+        border-radius: 3px;
+        background-color: yellowgreen;
+        transition: background-color 0.3s;
+    }
+
+    #frameContent {
+      width: 100%;
+      height: 88vh;
+      margin-top: 80px;
+      border: none;
+    }
+
+
+
+    @media(max-width: 50rem){     /* 화면 줄였을때, 메뉴리스트 드롭다운 버튼으로 변경 */
+        .Menu{
+            display: none;
+        }
+
+        .dropdown{
+            display : inline-block;
+        }
+
+        .dropdownList{
+            display: none;
+            z-index : 1; 
+            margin-top: 200px;
+        }
+
+        .dropbtn{
+            font-size: 1rem;
+            color: white;
+            margin-right: 40px;
+            background: rgba(44, 42, 39, 0.983);
+            border-color: rgba(44, 42, 39, 0.983);
+            transition: background-color 0.25s;
+        }
+
+        .dropdownList a{
+            display : block;
+            padding: 10px 0px;
+            text-align: center;
+            width:200px;
+            text-decoration: none;
+            border-bottom: 1px solid black;
+            z-index: 10;        
+            color: white;
+            background: rgba(44, 42, 39, 0.983);
+            box-shadow: 10px 10px 5px grey;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .dropdown:hover .dropdownList{
+            display: flex;
+            flex-direction: column;
+            padding:0;
+        }
+
+        .dropdownList a:hover{
+            background-color: yellowgreen;
+            border-color :yellowgreen;
+        }
+    }
+</style>
+  <script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get('variable');
+  </script>
+</head>
+<body onload="init()">
+  <div class="NavBar">
+    <img src="main/media/logo.png" width="50px" height="50px" style="margin-left: 20px;">
+    <ul class="Menu">
+      <li>
+        <a href="#" onclick="handleClick('home')" >Home</a>
+      </li>
+      <li>
+        <a href="#" onclick="handleClick('search')" >Search</a>
+      </li>
+      <li>
+        <a href="#" onclick="handleClick('mypage')" >Mypage</a>
+      </li>
+      <p onclick="logout()"> 로그아웃 </p>
+    </ul>
+    <section class="dropdown">
+      <img class="dropbtn" src="media/menu_btn.png" width="30px" height="30px">
+      <div class="dropdownList">
+        <a href="#" onclick="handleClick('home')" >Home</a>
+        <a href="#" onclick="handleClick('search')" >Search</a>
+        <a href="#" onclick="handleClick('mypage')" >Mypage</a>
+      </div>
+    </section>
+  </div>
+
+  <div id="frame">
+    <iframe id="frameContent" name="Contentframe" src="main/home.html"  frameborder="0"></iframe>
+  </div>
+
+  <script>
+    function init(){
+        document.getElementById('frameContent').src = 'main/home.html?variable=' + encodeURIComponent(id);
+    }
+    
+    function handleClick(value) {
+      if (value == 'home') {
+        document.getElementById('frameContent').src = 'main/home.html?variable=' + encodeURIComponent(id);
+      } else if (value == 'search') {
+        document.getElementById('frameContent').src = 'main/search.html?variable=' + encodeURIComponent(id);
+      }  else if (value == 'mypage') {
+        document.getElementById('frameContent').src = 'main/mypage.html?variable=' + encodeURIComponent(id);
+      }
+    }
+
+    function logout(){
+      location.href = "login.html"
+    }
+  </script>
+</body>
+</html>

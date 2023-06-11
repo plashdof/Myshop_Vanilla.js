@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Signup</title>
+  <style>
+    .form{
+    display: block;
+    margin: auto;
+    margin-top: 20px;
+    border: 1px solid #D8D8D8;
+    height: 650px;
+    width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    }
+
+    .form h1{
+        text-align:center;
+    }
+
+    .form h2{
+        background : rgba(44, 42, 39, 0.983);
+        color: white;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        padding: 5px 0px;
+        font-size: 20px;
+        font-weight: bold;
+        text-align:center;
+    }
+
+    .form label{
+        font: inherit;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .inputsec{
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .inputsec input{
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .buttonsec{
+        text-align: center;
+    }
+
+    .buttonsec button{
+        font: inherit;
+        cursor: pointer;
+        margin: 20px 30px;
+        background-color: rgba(44, 42, 39, 0.983);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: 1px solid rgba(44, 42, 39, 0.983);
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .buttonsec button:hover{
+        background-color: #a50e48;
+        border-color: #a50e48;
+    }
+  </style>
+</head>
+<body>
+    <form class="form" id="form">
+
+        <h1> 회원가입 </h1>
+        <h2> 회원 정보 </h2>
+        
+        <section class="inputsec">
+            <label for='nickname'>닉네임</label>
+            <input type='text' name="nickname" />
+        </section>
+        
+    
+        <section class="inputsec">
+            <label for='name'>이름</label>
+            <input type='text' name="name" }/>
+        </section>
+
+        <section class="inputsec">
+            <label for='email'>이메일</label>
+            <input type='text' name="email" }/>
+        </section>
+
+        <h2> 가입 정보 </h2>
+        
+        <section class="inputsec">
+            <label for='id'>아이디</label>
+            <input type='text' name='id' />
+        </section>
+
+        <section class="inputsec">
+            <label for='pw'>비밀번호</label>
+            <input type='text' name='pw'/>
+        </section>
+
+        <section class="buttonsec">
+            <button> Join </button>
+            <button> Reset </button>
+        </section>
+        
+    </form>
+
+  <script>
+    document.getElementById("form").addEventListener("submit", function(evt) {
+      event.preventDefault(); // 기본 제출 동작 방지
+
+      var nick = evt.target.nickname.value;
+      var email = evt.target.email.value;
+      var name = evt.target.name.value;
+      var id = evt.target.id.value;
+      var pw = evt.target.pw.value;
+
+      console.log(nick);
+      console.log(email);
+      console.log(name);
+      console.log(id);
+      console.log(pw);
+
+      fetch('http://localhost:8080/user/join', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 'nick': nick, 'email':email, 'name':name,'id':id,'pw':pw })
+        })
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+            console.log(data)
+            if(data.code == 200){
+                location.href="login.html"
+            }else{
+                
+            }
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        });
+      
+    });
+    
+  </script>
+</body>
+</html>

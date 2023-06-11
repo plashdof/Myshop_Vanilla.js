@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>상품상세</title>
+  <style>
+    body{
+      text-align: center;
+    }
+  </style>
+
+  <script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const uuid = urlParams.get('uuid');
+    const productid = urlParams.get('productid');
+    console.log(uuid, productid)
+  </script>
+
+  
+</head>
+<body>
+  <h1>상품상세</h1>
+
+  <img id="image-preview" alt="Product Image" width="200px" height="200px">
+  <p>상품명: <span id="name"></span></p>
+  <p>가격: <span id="price"></span></p>
+  <p>할인율: <span id="discount"></span></p>
+  <button id="addToCartButton" onclick="addCart()">장바구니에 추가</button>
+
+
+  <script>
+        const fileInput = document.querySelector("#file");
+        const imagePreview = document.querySelector("#image-preview");
+
+        fetch('http://localhost:8080/home/getoneitem', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'id' : productid 
+        }})
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+          console.log(data)
+
+          const img = document.getElementById('image-preview')
+          const name = document.getElementById('name')
+          const price = document.getElementById('price')
+          const discount = document.getElementById('discount')
+
+          const uint8Array = new Uint8Array(data.img.data);
+          const chunks = [];
+          const CHUNK_SIZE = 8192; 
+          for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+              chunks.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SIZE)));
+          }
+          const base64Data = btoa(chunks.join(''));
+          img.src = 'data:image/jpeg;base64,' + base64Data;
+          name.textContent = data.name;
+          price.textContent = data.price;
+          discount.textContent = data.discount;
+         
+
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        })
+
+        // 상품 업로드 로직
+
+        fileInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+
+          if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            imagePreview.src = imageUrl;
+          }
+        });
+
+        function addCart(){
+            const name = document.getElementById('name')
+            const price = document.getElementById('price')
+            const discount = document.getElementById('discount')
+
+
+            fetch('http://localhost:8080/home/addcart', {
+                method: 'POST',
+                headers: {
+                        'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  'uuid' : uuid,
+                  'itemid' : productid,
+                  'name' : name.textContent,
+                  'price' : price.textContent,
+                  'discount' : discount.textContent
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+
+  
+  </script>
+</body>
+
+</html>

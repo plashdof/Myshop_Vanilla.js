@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        p{
+            margin-left: 30px;
+        }
+
+        .itemContainer {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: gray lightgray;
+        }
+
+        .product-container {
+            margin-bottom: 20px;
+            margin-left: 30px;
+            padding: 20px 50px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid #D8D8D8;
+            width: 150px; /* 조정 가능한 상품 가로 크기 */
+        }
+
+        .product-container:last-child {
+            margin-right: 0;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+      </style>
+
+      <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get('variable');
+      </script>
+</head>
+
+<body>
+
+    <p> Best Items </p>
+    <div class="itemContainer" id="bestItems">
+    </div>
+
+    <br><br><br>
+
+    <p> New Items </p>
+    <div class="itemContainer" id="newItems">
+    </div>
+
+    <script>
+      fetch('http://localhost:8080/home/getitem', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }})
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+          console.log(data)
+          parents = document.getElementById("bestItems")
+          
+          // 데이터 행마다 반복하여 테이블에 추가
+          data.forEach(item => {
+            const cont = document.createElement('div');
+            cont.className="product-container"
+            cont.onclick=()=>{
+              const data = {
+                uuid: id,
+                productid: item.id 
+              };
+              const queryString = new URLSearchParams(data).toString();
+              const url = `sub/productdetail.html?${queryString}`;
+              window.location.href = url;
+            }
+
+            const imgcont = document.createElement('div')
+            imgcont.className="product-image"
+
+            const imgblock = document.createElement('img')
+
+            // Buffer 데이터를 Base64로 인코딩하여 이미지 소스로 설정
+            const uint8Array = new Uint8Array(item.img.data);
+            const chunks = [];
+            const CHUNK_SIZE = 8192; 
+            for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+              chunks.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SIZE)));
+            }
+            const base64Data = btoa(chunks.join(''));
+            imgblock.src = 'data:image/jpeg;base64,' + base64Data;
+            imgblock.alt = "ProductImage"
+            imgcont.appendChild(imgblock)
+            
+
+            const infocont = document.createElement('div')
+            infocont.className="product-details"
+
+            const nameblock = document.createElement('h3')
+            nameblock.textContent = item.name 
+
+            const priceblock = document.createElement('p')
+            priceblock.textContent = item.price 
+
+            const discountblock = document.createElement('p')
+            discountblock.textContent = item.discount 
+            infocont.appendChild(nameblock)
+            infocont.appendChild(priceblock)
+            infocont.appendChild(discountblock)
+
+            cont.appendChild(imgcont)
+            cont.appendChild(infocont)
+            parents.appendChild(cont)
+          });
+
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        })
+
+
+
+
+      
+
+    </script>
+</body>
+
+</html>

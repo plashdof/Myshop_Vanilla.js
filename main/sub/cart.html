@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>장바구니</title>
+
+  <script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get('variable');
+    console.log(id)
+  </script>
+  
+</head>
+<body>
+  <div id="productLists">
+
+    <h1> 장바구니 리스트 </h1>
+  </div>
+
+  <script>
+        const fileInput = document.querySelector("#file");
+        const imagePreview = document.querySelector("#image-preview");
+
+        // 장바구니 가져오기
+
+        fetch('http://localhost:8080/home/getcart', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'id': id 
+        }})
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+          console.log(data)
+          parents = document.getElementById("productLists")
+          
+          // 데이터 행마다 반복하여 테이블에 추가
+          data.forEach(item => {
+            const cont = document.createElement('div');
+
+            const infocont = document.createElement('div')
+            infocont.style.display="inline-block"
+
+            const nameblock = document.createElement('h3')
+            nameblock.textContent = item.name 
+            infocont.appendChild(nameblock)
+
+            const deletebtn = document.createElement('a')
+            deletebtn.style.marginLeft="20px"
+            deletebtn.textContent = "삭제"
+            deletebtn.onclick = function(){
+                fetch('http://localhost:8080/home/deletecart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 'id':item.id })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                        return response.json();
+                        } else {
+                        throw new Error('Error: ' + response.status);
+                        }
+                    })
+                    .then(data => {
+                        console.log(data)
+                    })
+                    .catch(error => {
+                        // 에러 처리
+                        console.error(error);
+                    });
+                
+            }
+
+            cont.appendChild(infocont)
+            cont.appendChild(deletebtn)
+            parents.appendChild(cont)
+          });
+
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        })
+
+
+  </script>
+</body>
+</html>

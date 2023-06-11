@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin</title>
+
+  <style>
+    div{
+        margin: 30px; 
+        text-align: center;
+    }
+    .form{
+    display: block;
+    margin: auto;
+    margin-top: 20px;
+    border: 1px solid #D8D8D8;
+    height: 800px;
+    width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    }
+
+    .form h1{
+        text-align:center;
+    }
+
+    .form h2{
+        background : rgba(44, 42, 39, 0.983);
+        color: white;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        font-size: 20px;
+        font-weight: bold;
+        text-align:center;
+    }
+
+    .form label{
+        font: inherit;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .inputsec{
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .inputsec input{
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .buttonsec{
+        text-align: center;
+    }
+
+    .buttonsec button{
+        font: inherit;
+        cursor: pointer;
+        margin: 20px 30px;
+        background-color: rgba(44, 42, 39, 0.983);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: 1px solid rgba(44, 42, 39, 0.983);
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .buttonsec button:hover{
+        background-color: #a50e48;
+        border-color: #a50e48;
+    }
+  </style>
+
+  <script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const id = urlParams.get('variable');
+  </script>
+ 
+</head>
+<body>
+
+    <form class="form" id="form">
+
+        <h1> 상품수정 </h1>
+
+        <section class="inputsec"id="post-images">
+            <label for="file" id="select-image">
+                <img id="image-preview" alt="image select" src="" width="400px" height="200px" /><br>
+                <input type="file" id="file" name="files" >
+            </label>
+        </section>
+        
+        <section class="inputsec">
+            <label for='name'>상품명</label>
+            <input id = 'name' type='text' name='name' />
+        </section>
+
+        <section class="inputsec">
+            <label for='price'>상품가격</label>
+            <input id = 'price' type='text' name='price'/>
+        </section>
+
+        <section class="inputsec">
+            <label for='discount'>할인율</label>
+            <input id = 'discount' type='text' name='discount'/>
+        </section>
+
+        <section class="buttonsec">
+            <button> 수정하기 </button>
+        </section>
+
+        
+    </form>
+
+    <script>
+        const fileInput = document.querySelector("#file");
+        const imagePreview = document.querySelector("#image-preview");
+
+        fetch('http://localhost:8080/home/getoneitem', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'id' : id 
+        }})
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+          console.log(data)
+
+          const img = document.getElementById('image-preview')
+          const name = document.getElementById('name')
+          const price = document.getElementById('price')
+          const discount = document.getElementById('discount')
+
+          const uint8Array = new Uint8Array(data.img.data);
+          const chunks = [];
+          const CHUNK_SIZE = 8192; 
+          for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+              chunks.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SIZE)));
+          }
+          const base64Data = btoa(chunks.join(''));
+          img.src = 'data:image/jpeg;base64,' + base64Data;
+          name.value = data.name;
+          price.value = data.price;
+          discount.value = data.discount;
+         
+
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        })
+
+        // 상품 업로드 로직
+
+        fileInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+
+          if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            imagePreview.src = imageUrl;
+          }
+        });
+
+        document.getElementById("form").addEventListener("submit", function(evt) {
+            evt.preventDefault();
+
+            var name = evt.target.name.value;
+            var price = evt.target.price.value;
+            var discount = evt.target.discount.value;
+
+
+            fetch('http://localhost:8080/admin/updateitem', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'name': name, 'price':price, 'discount':discount,'id':id })
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+    </script>
+
+</body>
+</html>

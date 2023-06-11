@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>쇼핑몰 검색 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        #searchForm {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: dodgerblue;
+        }
+
+        #searchButton {
+            padding: 10px;
+            background-color: dodgerblue;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #searchButton:hover {
+            background-color: deepskyblue;
+        }
+
+        #searchResults {
+            text-align: center;
+        }
+
+        .searchResultItem {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .searchResultItem:hover {
+            background-color: #f2f2f2;
+        }
+    </style>
+
+    <script>
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const id = urlParams.get('variable');
+    </script>
+</head>
+
+<body>
+    <h2>상품 검색</h2>
+
+    <div id="searchForm">
+        <input type="text" id="searchInput" placeholder="검색어를 입력하세요">
+        <button onclick="searching()">&#128269;</button>
+    </div>
+
+    <div id="searchResults">
+    </div>
+
+    <script>
+        function searching(){
+            
+
+            const search = document.getElementById('searchInput')
+            console.log(search.value)
+            fetch('http://localhost:8080/home/getsearchitem', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'search' : search.value
+            }})
+            .then(response => {
+                if (response.ok) {
+                return response.json();
+                } else {
+                throw new Error('Error: ' + response.status);
+                }
+            })
+            .then(data => {
+            console.log(data)
+            parents = document.getElementById("searchResults")
+            parents.replaceChildren()
+            
+            // 데이터 행마다 반복하여 테이블에 추가
+            data.forEach(item => {
+                const cont = document.createElement('div');
+                cont.className="product-container"
+                cont.onclick=()=>{
+                const data = {
+                    uuid: id,
+                    productid: item.id 
+                };
+                const queryString = new URLSearchParams(data).toString();
+                const url = `sub/productdetail.html?${queryString}`;
+                window.location.href = url;
+                }
+
+                const imgcont = document.createElement('div')
+                imgcont.className="product-image"
+
+                const imgblock = document.createElement('img')
+
+                // Buffer 데이터를 Base64로 인코딩하여 이미지 소스로 설정
+                const uint8Array = new Uint8Array(item.img.data);
+                const chunks = [];
+                const CHUNK_SIZE = 8192; 
+                for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+                chunks.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SIZE)));
+                }
+                const base64Data = btoa(chunks.join(''));
+                imgblock.src = 'data:image/jpeg;base64,' + base64Data;
+                imgblock.alt = "ProductImage"
+                imgcont.appendChild(imgblock)
+                
+
+                const infocont = document.createElement('div')
+                infocont.className="product-details"
+
+                const nameblock = document.createElement('h3')
+                nameblock.textContent = item.name 
+
+                const priceblock = document.createElement('p')
+                priceblock.textContent = item.price 
+
+                const discountblock = document.createElement('p')
+                discountblock.textContent = item.discount 
+                infocont.appendChild(nameblock)
+                infocont.appendChild(priceblock)
+                infocont.appendChild(discountblock)
+
+                cont.appendChild(imgcont)
+                cont.appendChild(infocont)
+                parents.appendChild(cont)
+            });
+
+            })
+            .catch(error => {
+                // 에러 처리
+                console.error(error);
+            })
+
+        }
+        
+
+    </script>
+</body>
+
+</html>

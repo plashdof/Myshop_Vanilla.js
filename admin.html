@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin</title>
+
+  <style>
+    div{
+        margin: 30px; 
+        text-align: center;
+    }
+    .form{
+    display: block;
+    margin: auto;
+    margin-top: 20px;
+    border: 1px solid #D8D8D8;
+    height: 800px;
+    width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    }
+
+    .form h1{
+        text-align:center;
+    }
+
+    .form h2{
+        background : rgba(44, 42, 39, 0.983);
+        color: white;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        font-size: 20px;
+        font-weight: bold;
+        text-align:center;
+    }
+
+    .form label{
+        font: inherit;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .inputsec{
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .inputsec input{
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+
+    .buttonsec{
+        text-align: center;
+    }
+
+    .buttonsec button{
+        font: inherit;
+        cursor: pointer;
+        margin: 20px 30px;
+        background-color: rgba(44, 42, 39, 0.983);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border: 1px solid rgba(44, 42, 39, 0.983);
+        border-radius: 4px;
+        font-weight: bold;
+    }
+
+    .buttonsec button:hover{
+        background-color: #a50e48;
+        border-color: #a50e48;
+    }
+  </style>
+ 
+</head>
+<body>
+
+    <form class="form" id="form">
+
+        <h1> 상품등록 </h1>
+
+        <section class="inputsec"id="post-images">
+            <label for="file" id="select-image">
+                <img id="image-preview" alt="image select" src="" width="400px" height="200px" /><br>
+                <input type="file" id="file" name="files" >
+            </label>
+        </section>
+        
+        <section class="inputsec">
+            <label for='name'>상품명</label>
+            <input type='text' name='name' />
+        </section>
+
+        <section class="inputsec">
+            <label for='price'>상품가격</label>
+            <input type='text' name='price'/>
+        </section>
+
+        <section class="inputsec">
+            <label for='discount'>할인율</label>
+            <input type='text' name='discount'/>
+        </section>
+
+        <section class="buttonsec">
+            <button> 등록 </button>
+        </section>
+
+        
+    </form>
+
+    <div id="productLists">
+
+        <h1> 상품 리스트 </h1>
+
+        
+    </div>
+    
+
+    <script>
+        const fileInput = document.querySelector("#file");
+        const imagePreview = document.querySelector("#image-preview");
+
+        // 상품목록 가져오기
+
+        fetch('http://localhost:8080/home/getitem', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }})
+        .then(response => {
+            if (response.ok) {
+            return response.json();
+            } else {
+            throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(data => {
+          console.log(data)
+          parents = document.getElementById("productLists")
+          
+          // 데이터 행마다 반복하여 테이블에 추가
+          data.forEach(item => {
+            const cont = document.createElement('div');
+            
+
+            const imgcont = document.createElement('div')
+            imgcont.style.display="inline-block"
+            const imgblock = document.createElement('img')
+            imgblock.height=50 
+            imgblock.width=50
+
+            // Buffer 데이터를 Base64로 인코딩하여 이미지 소스로 설정
+            const uint8Array = new Uint8Array(item.img.data);
+            const chunks = [];
+            const CHUNK_SIZE = 8192; 
+            for (let i = 0; i < uint8Array.length; i += CHUNK_SIZE) {
+              chunks.push(String.fromCharCode.apply(null, uint8Array.subarray(i, i + CHUNK_SIZE)));
+            }
+            const base64Data = btoa(chunks.join(''));
+            imgblock.src = 'data:image/jpeg;base64,' + base64Data;
+            imgblock.alt = "ProductImage"
+            imgcont.appendChild(imgblock)
+            
+
+            const infocont = document.createElement('div')
+            infocont.style.display="inline-block"
+            const nameblock = document.createElement('h3')
+            nameblock.textContent = item.name 
+            infocont.appendChild(nameblock)
+
+            const deletebtn = document.createElement('a')
+            deletebtn.textContent = "삭제"
+            deletebtn.onclick = function(){
+                fetch('http://localhost:8080/admin/deleteitem', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 'id':item.id })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                        return response.json();
+                        } else {
+                        throw new Error('Error: ' + response.status);
+                        }
+                    })
+                    .then(data => {
+                        console.log(data)
+                    })
+                    .catch(error => {
+                        // 에러 처리
+                        console.error(error);
+                    });
+                
+            }
+
+            const replacebtn = document.createElement('a')
+            replacebtn.textContent = "수정"
+            replacebtn.style.marginLeft="10px"
+            replacebtn.onclick = function(){
+                location.href = 'adminFix.html?variable=' + encodeURIComponent(item.id);
+            }
+
+            cont.appendChild(imgcont)
+            cont.appendChild(infocont)
+            cont.appendChild(deletebtn)
+            cont.appendChild(replacebtn)
+            parents.appendChild(cont)
+          });
+
+        })
+        .catch(error => {
+            // 에러 처리
+            console.error(error);
+        })
+
+
+        // 상품 업로드 로직
+
+        fileInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+
+          if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            imagePreview.src = imageUrl;
+          }
+        });
+
+
+
+        document.getElementById("form").addEventListener("submit", function(evt) {
+            evt.preventDefault();
+
+            const fileInput = document.getElementById('file');
+            const file = fileInput.files[0];
+            console.log(typeof(file))
+            var name = evt.target.name.value;
+            var price = evt.target.price.value;
+            var discount = evt.target.discount.value;
+
+            const formData = new FormData();
+            formData.append('id',0);
+            formData.append('name',name);
+            formData.append('price',price);
+            formData.append('discount',discount);
+            formData.append('image', file);
+
+            /* key 확인하기 */
+            for (let key of formData.keys()) {
+                console.log(key);
+            }
+
+            /* value 확인하기 */
+            for (let value of formData.values()) {
+                console.log(value);
+            }
+            
+
+            fetch('http://localhost:8080/admin/setitem', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        });
+
+    </script>
+
+</body>
+</html>
